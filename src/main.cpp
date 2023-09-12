@@ -98,6 +98,32 @@ int main()
         
         // Create the entities
         // <YOUR CODE HERE>
+        uint32_t num_plants= (uint32_t)request_body["plants"];
+        uint32_t num_herbivores= (uint32_t)request_body["herbivores"];
+        uint32_t num_carnivores= (uint32_t)request_body["carnivores"];
+
+        int count=0;
+        int i, j;
+
+        while(count< num_plants){
+            static std::random_device rd;
+            static std::mt19937 gen(rd());
+            std::uniform_int_distribution<> dis(0, 14);
+            i= dis(gen);
+            j= dis(gen);
+
+            while(entity_grid[i][j].type!= empty){
+                i= dis(gen);
+                j= dis(gen);
+            }
+
+            entity_grid[i][j].type= plant;
+            entity_grid[i][j].age= 0;
+            
+           
+
+            count++;
+        }
 
         // Return the JSON representation of the entity grid
         nlohmann::json json_grid = entity_grid; 

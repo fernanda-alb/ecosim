@@ -5,7 +5,7 @@
 bool random_action(float probability) {
     static std::random_device rd;
     static std::mt19937 gen(rd());
-    std::uniform_real_distribution<> dis(0.0, 1.0);
+    std::uniform_real_distribution<> dis(0.0, 1.0); // usar  amesma lógica p/ gerar posicao (real - int e 0-1 vira 0-14)
     return dis(gen) < probability;
 }
 
