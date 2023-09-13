@@ -102,13 +102,16 @@ int main()
         uint32_t num_herbivores= (uint32_t)request_body["herbivores"];
         uint32_t num_carnivores= (uint32_t)request_body["carnivores"];
 
-        int count=0;
+        int count_p=0;
+        int count_h=0;
+        int count_c=0; 
         int i, j;
 
-        while(count< num_plants){
-            static std::random_device rd;
-            static std::mt19937 gen(rd());
-            std::uniform_int_distribution<> dis(0, 14);
+        static std::random_device rd;
+        static std::mt19937 gen(rd());
+        std::uniform_int_distribution<> dis(0, 14);
+
+        while(count_p< num_plants){
             i= dis(gen);
             j= dis(gen);
 
@@ -120,9 +123,39 @@ int main()
             entity_grid[i][j].type= plant;
             entity_grid[i][j].age= 0;
             
-           
+            count_p++;
+        }
 
-            count++;
+        while(count_h< num_herbivores){
+            i= dis(gen);
+            j= dis(gen);
+
+            while(entity_grid[i][j].type!= empty){
+                i= dis(gen);
+                j= dis(gen);
+            }
+
+            entity_grid[i][j].type= herbivore;
+            entity_grid[i][j].age= 0;
+            entity_grid[i][j].energy= 50;
+            
+            count_h++;
+        }
+
+        while(count_c< num_carnivores){
+            i= dis(gen);
+            j= dis(gen);
+
+            while(entity_grid[i][j].type!= empty){
+                i= dis(gen);
+                j= dis(gen);
+            }
+
+            entity_grid[i][j].type= carnivore;
+            entity_grid[i][j].age= 0;
+            entity_grid[i][j].energy= 100;
+            
+            count_c++;
         }
 
         // Return the JSON representation of the entity grid
@@ -137,7 +170,37 @@ int main()
         // Simulate the next iteration
         // Iterate over the entity grid and simulate the behaviour of each entity
         
-        // <YOUR CODE HERE>
+        // <YOUR CODE HERE> 
+
+        //SIMULATE_RAMDOM_ACTIONS.CPP
+        
+        // possibilidades da planta- posições 
+            // reprodução- valor aleatório 0-1 : 0.7 chance de crescer
+            // crescer- posição adjacente vazia aletória 
+            // vida- 10 iterações. Depois morre e esvazia célula
+
+        //possibilidades do herbívoro 
+            // walk- valor aleatório 0-1: 0.7 chance 
+            // walk- adjacente vazia aleat (exceto com carnívoro)
+            // walk- perde 5 de E
+            // eat - 0-1: 0.9 chance de comer planta vizinha
+            // eat- +30 E
+            // reprod.- 0-1: 0.075 chance (quando E>20)
+            // reprod.- perde 10 E
+            // reprod.- neném surge em cél vazia adjacente aleat. 
+            // morte- E=0
+            // vida- 50 iterações (se não morrer de fome)
+
+        //possibilidades do carnívoro 
+            // walk- 0-1: 0.5 chance 
+            // walk- direcao: cél adj aleat (até com herb)
+            // walk- perde 5E
+            // eat- se adj a um herb, 1 chance de comer 
+            // eat- +20E ao comer herb
+            // reprod.- 0,025 chance com E>20
+            // reprod.- neném surge cél adj vazia aleat
+            // morte- E=0
+            // vida- 80 iterações se não morrer de fome 
         
         // Return the JSON representation of the entity grid
         nlohmann::json json_grid = entity_grid; 
