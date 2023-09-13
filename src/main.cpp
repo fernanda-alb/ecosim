@@ -4,6 +4,8 @@
 #include "crow_all.h"
 #include "json.hpp"
 #include <random>
+#include <thread>
+#include <vector>
 
 static const uint32_t NUM_ROWS = 15;
 
@@ -65,6 +67,53 @@ namespace nlohmann
 // Grid that contains the entities
 static std::vector<std::vector<entity_t>> entity_grid;
 
+
+bool random_action(float probability) {
+    static std::random_device rd;
+    static std::mt19937 gen(rd());
+    std::uniform_real_distribution<> dis(0.0, 1.0); // usar  amesma lógica p/ gerar posicao (real - int e 0-1 vira 0-14)
+    return dis(gen) < probability;
+}
+
+// Simulate random actions for different entities
+void simulate_random_actions() {
+    // Probabilities for different actions
+    float plant_growth_probability = 0.20; // 20% chance of growth
+    float herbivore_move_probability = 0.70; // 70% chance to action
+    float carnivore_move_probability = 0.60; // 60% chance to action
+
+    // Simulate plant growth
+    if (random_action(plant_growth_probability)) {
+        std::cout << "Plant grows.\n";
+        // check espacos vazios 
+        // pilha 
+        // thread nova - cresce aleat
+    } else {
+        std::cout << "Plant does not grow.\n";
+    }
+
+    // Simulate herbivore action
+    if (random_action(herbivore_move_probability)) {
+        std::cout << "Herbivore moves.\n";
+        // check espacos vazios 
+        // pilha? - anda aleat
+        
+    } else {
+        std::cout << "Herbivore does not move.\n";
+    }
+
+    // Simulate carnivore action
+    if (random_action(carnivore_move_probability)) {
+        std::cout << "Carnivore moves.\n";
+        // check espacos vazios + espacos com herb
+        // pilha? - anda aleat
+        
+    } else {
+        std::cout << "Carnivore does not move.\n";
+    }
+}
+
+
 int main()
 {
     crow::SimpleApp app;
@@ -112,6 +161,7 @@ int main()
         std::uniform_int_distribution<> dis(0, 14);
 
         while(count_p< num_plants){
+            pos_t pos_plant;
             i= dis(gen);
             j= dis(gen);
 
@@ -119,14 +169,17 @@ int main()
                 i= dis(gen);
                 j= dis(gen);
             }
-
             entity_grid[i][j].type= plant;
             entity_grid[i][j].age= 0;
-            
+
+            pos_plant.i= i;
+            pos_plant.j= j; 
+
             count_p++;
         }
 
         while(count_h< num_herbivores){
+            pos_t pos_herbivore;
             i= dis(gen);
             j= dis(gen);
 
@@ -134,7 +187,6 @@ int main()
                 i= dis(gen);
                 j= dis(gen);
             }
-
             entity_grid[i][j].type= herbivore;
             entity_grid[i][j].age= 0;
             entity_grid[i][j].energy= 50;
@@ -143,6 +195,7 @@ int main()
         }
 
         while(count_c< num_carnivores){
+            pos_t pos_carnivore; 
             i= dis(gen);
             j= dis(gen);
 
@@ -150,7 +203,6 @@ int main()
                 i= dis(gen);
                 j= dis(gen);
             }
-
             entity_grid[i][j].type= carnivore;
             entity_grid[i][j].age= 0;
             entity_grid[i][j].energy= 100;
@@ -172,8 +224,9 @@ int main()
         
         // <YOUR CODE HERE> 
 
-        //SIMULATE_RAMDOM_ACTIONS.CPP
-        
+        //SIMULATE_RANDOM_ACTIONS.CPP
+        simulate_random_actions();
+
         // possibilidades da planta- posições 
             // reprodução- valor aleatório 0-1 : 0.7 chance de crescer
             // crescer- posição adjacente vazia aletória 
@@ -209,3 +262,4 @@ int main()
 
     return 0;
 }
+
