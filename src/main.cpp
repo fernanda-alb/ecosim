@@ -79,38 +79,48 @@ int i, j;
 void actions(){
     for(i=0; i< NUM_ROWS; i++){
         for(j=0; j< NUM_ROWS; j++){
-            if (entity_grid[i][j].type != empty) {
-                if (entity_grid[i][j].type == plant) {
-                    if (entity_grid[i][j].age == PLANT_MAXIMUM_AGE) {
-                        entity_grid[i][j].age = 0;
-                        entity_grid[i][j].type = empty;
-                    } else {
-                        entity_grid[i][j].age++;
-                    }
-                    // Resto do código para plant...
-                }
-                else if (entity_grid[i][j].type == herbivore) {
-                    if (entity_grid[i][j].age == HERBIVORE_MAXIMUM_AGE) {
-                        entity_grid[i][j].age = 0;
-                        entity_grid[i][j].type = empty;
-                    } else {
-                        entity_grid[i][j].age++;
-                    }
-                    // Resto do código para herbivore...
-                }
-                else if(entity_grid[i][j].type == carnivore){
-                    if (entity_grid[i][j].age == CARNIVORE_MAXIMUM_AGE) {
-                        entity_grid[i][j].age = 0;
-                        entity_grid[i][j].type = empty;
-                    } else {
-                        entity_grid[i][j].age++;
-                    }
-                    // Resto do código para herbivore...
-                }
+            if(entity_grid[i][j].type == plant && entity_grid[i][j].age == PLANT_MAXIMUM_AGE|| 
+               entity_grid[i][j].type == herbivore && entity_grid[i][j].age == HERBIVORE_MAXIMUM_AGE ||
+               entity_grid[i][j].type == carnivore && entity_grid[i][j].age == CARNIVORE_MAXIMUM_AGE){
+
+                entity_grid[i][j].type= empty; 
+            }
+            else{
+                entity_grid[i][j].age ++;
+            }
+
+            // if (entity_grid[i][j].type != empty) {
+            //     if (entity_grid[i][j].type == plant) {
+            //         if (entity_grid[i][j].age == PLANT_MAXIMUM_AGE) {
+            //             entity_grid[i][j].age = 0;
+            //             entity_grid[i][j].type = empty;
+            //         } else {
+            //             entity_grid[i][j].age++;
+            //         }
+            //         // Resto do código para plant...
+            //     }
+            //     else if (entity_grid[i][j].type == herbivore) {
+            //         if (entity_grid[i][j].age == HERBIVORE_MAXIMUM_AGE) {
+            //             entity_grid[i][j].age = 0;
+            //             entity_grid[i][j].type = empty;
+            //         } else {
+            //             entity_grid[i][j].age++;
+            //         }
+            //         // Resto do código para herbivore...
+            //     }
+            //     else if(entity_grid[i][j].type == carnivore){
+            //         if (entity_grid[i][j].age == CARNIVORE_MAXIMUM_AGE) {
+            //             entity_grid[i][j].age = 0;
+            //             entity_grid[i][j].type = empty;
+            //         } else {
+            //             entity_grid[i][j].age++;
+            //         }
+            //         // Resto do código para herbivore...
+            //     }
             }
         }
     }
-}
+
 
 
 int main()
