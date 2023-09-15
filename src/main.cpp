@@ -68,48 +68,47 @@ namespace nlohmann
 static std::vector<std::vector<entity_t>> entity_grid;
 
 
-bool random_action(float probability) {
+bool random_action(double probability) {
     static std::random_device rd;
     static std::mt19937 gen(rd());
     std::uniform_real_distribution<> dis(0.0, 1.0); // usar  amesma lógica p/ gerar posicao (real - int e 0-1 vira 0-14)
     return dis(gen) < probability;
 }
 
-// Simulate random actions for different entities
-void simulate_random_actions() {
-    // Probabilities for different actions
-    float plant_growth_probability = 0.20; // 20% chance of growth
-    float herbivore_move_probability = 0.70; // 70% chance to action
-    float carnivore_move_probability = 0.60; // 60% chance to action
-
-    // Simulate plant growth
-    if (random_action(plant_growth_probability)) {
-        std::cout << "Plant grows.\n";
-        // check espacos vazios 
-        // pilha 
-        // thread nova - cresce aleat
-    } else {
-        std::cout << "Plant does not grow.\n";
-    }
-
-    // Simulate herbivore action
-    if (random_action(herbivore_move_probability)) {
-        std::cout << "Herbivore moves.\n";
-        // check espacos vazios 
-        // pilha? - anda aleat
-        
-    } else {
-        std::cout << "Herbivore does not move.\n";
-    }
-
-    // Simulate carnivore action
-    if (random_action(carnivore_move_probability)) {
-        std::cout << "Carnivore moves.\n";
-        // check espacos vazios + espacos com herb
-        // pilha? - anda aleat
-        
-    } else {
-        std::cout << "Carnivore does not move.\n";
+int i, j;
+void actions(){
+    for(i=0; i< NUM_ROWS; i++){
+        for(j=0; j< NUM_ROWS; j++){
+            if (entity_grid[i][j].type != empty) {
+                if (entity_grid[i][j].type == plant) {
+                    if (entity_grid[i][j].age == PLANT_MAXIMUM_AGE) {
+                        entity_grid[i][j].age = 0;
+                        entity_grid[i][j].type = empty;
+                    } else {
+                        entity_grid[i][j].age++;
+                    }
+                    // Resto do código para plant...
+                }
+                else if (entity_grid[i][j].type == herbivore) {
+                    if (entity_grid[i][j].age == HERBIVORE_MAXIMUM_AGE) {
+                        entity_grid[i][j].age = 0;
+                        entity_grid[i][j].type = empty;
+                    } else {
+                        entity_grid[i][j].age++;
+                    }
+                    // Resto do código para herbivore...
+                }
+                else if(entity_grid[i][j].type == carnivore){
+                    if (entity_grid[i][j].age == CARNIVORE_MAXIMUM_AGE) {
+                        entity_grid[i][j].age = 0;
+                        entity_grid[i][j].type = empty;
+                    } else {
+                        entity_grid[i][j].age++;
+                    }
+                    // Resto do código para herbivore...
+                }
+            }
+        }
     }
 }
 
@@ -154,7 +153,6 @@ int main()
         int count_p=0;
         int count_h=0;
         int count_c=0; 
-        int i, j;
 
         static std::random_device rd;
         static std::mt19937 gen(rd());
@@ -223,9 +221,7 @@ int main()
         // Iterate over the entity grid and simulate the behaviour of each entity
         
         // <YOUR CODE HERE> 
-
-        //SIMULATE_RANDOM_ACTIONS.CPP
-        simulate_random_actions();
+        actions();
 
         // possibilidades da planta- posições 
             // reprodução- valor aleatório 0-1 : 0.7 chance de crescer
