@@ -79,7 +79,7 @@ uint32_t i, j;
 std::vector<pos_t> valid_pos;
 pos_t pos_aleatoria;
 
-pos_t reproduction(pos_t pos)
+pos_t check_empty(pos_t pos)
 {
     if (pos.i + 1 < NUM_ROWS)
     {
@@ -124,6 +124,98 @@ pos_t reproduction(pos_t pos)
     }
 }
 
+pos_t check_plants(pos_t pos)
+{
+    if (pos.i + 1 < NUM_ROWS)
+    {
+        if (entity_grid[pos.i + 1][pos.j].type == plant)
+        {
+            valid_pos.push_back({pos.i + 1, pos.j});
+        }
+    }
+    if (pos.i > 0)
+    {
+        if (entity_grid[pos.i - 1][pos.j].type == plant)
+        {
+            valid_pos.push_back({pos.i - 1, pos.j});
+        }
+    }
+    if (pos.j + 1 < NUM_ROWS)
+    {
+        if (entity_grid[pos.i][pos.j + 1].type == plant)
+        {
+            valid_pos.push_back({pos.i, pos.j + 1});
+        }
+    }
+    if (pos.j > 0)
+    {
+        if (entity_grid[pos.i][pos.j - 1].type == plant)
+        {
+            valid_pos.push_back({pos.i, pos.j - 1});
+        }
+    }
+    if (!valid_pos.empty())
+    {
+        static std::random_device rd;
+        static std::mt19937 gen(rd());
+        std::uniform_int_distribution<> dis(0, valid_pos.size() - 1);
+        pos_aleatoria = valid_pos[dis(gen)];
+        valid_pos.clear();
+        return pos_aleatoria;
+    }
+    else
+    {
+        return pos;
+    }
+}
+
+pos_t check_herbivores(pos_t pos)
+{
+    if (pos.i + 1 < NUM_ROWS)
+    {
+        if (entity_grid[pos.i + 1][pos.j].type == herbivore)
+        {
+            valid_pos.push_back({pos.i + 1, pos.j});
+        }
+    }
+    if (pos.i > 0)
+    {
+        if (entity_grid[pos.i - 1][pos.j].type == herbivore)
+        {
+            valid_pos.push_back({pos.i - 1, pos.j});
+        }
+    }
+    if (pos.j + 1 < NUM_ROWS)
+    {
+        if (entity_grid[pos.i][pos.j + 1].type == herbivore)
+        {
+            valid_pos.push_back({pos.i, pos.j + 1});
+        }
+    }
+    if (pos.j > 0)
+    {
+        if (entity_grid[pos.i][pos.j - 1].type == herbivore)
+        {
+            valid_pos.push_back({pos.i, pos.j - 1});
+        }
+    }
+    if (!valid_pos.empty())
+    {
+        static std::random_device rd;
+        static std::mt19937 gen(rd());
+        std::uniform_int_distribution<> dis(0, valid_pos.size() - 1);
+        pos_aleatoria = valid_pos[dis(gen)];
+        valid_pos.clear();
+        return pos_aleatoria;
+    }
+    else
+    {
+        return pos;
+    }
+}
+
+
+
 void actions()
 {
     for (int i = 0; i < NUM_ROWS; i++)
@@ -134,8 +226,8 @@ void actions()
             if (entity_grid[i][j].type != empty)
             {
                 if (entity_grid[i][j].type == plant && entity_grid[i][j].age == PLANT_MAXIMUM_AGE ||
-                    entity_grid[i][j].type == herbivore && entity_grid[i][j].age == HERBIVORE_MAXIMUM_AGE ||
-                    entity_grid[i][j].type == carnivore && entity_grid[i][j].age == CARNIVORE_MAXIMUM_AGE)
+                    entity_grid[i][j].type == herbivore && (entity_grid[i][j].age == HERBIVORE_MAXIMUM_AGE || entity_grid[i][j].energy == 0) ||
+                    entity_grid[i][j].type == carnivore && (entity_grid[i][j].age == CARNIVORE_MAXIMUM_AGE || entity_grid[i][j].energy == 0))
                 {
                     entity_grid[i][j].type = empty;
                     entity_grid[i][j].age = 0;
@@ -152,7 +244,7 @@ void actions()
                     pos_plant.j = j;
                     if (random_action(PLANT_REPRODUCTION_PROBABILITY))
                     {
-                        pos_t nova_posp = reproduction(pos_plant);
+                        pos_t nova_posp = check_empty(pos_plant);
                         if (entity_grid[nova_posp.i][nova_posp.j].type == empty)
                         {
                             entity_grid[nova_posp.i][nova_posp.j].type = plant;
@@ -163,35 +255,76 @@ void actions()
 
                 if (entity_grid[i][j].type == herbivore)
                 {
-                    pos_t pos_herb;
-                    pos_herb.i = i;
-                    pos_herb.j = j;
-                    if (random_action(HERBIVORE_REPRODUCTION_PROBABILITY))
-                    {
-                        entity_grid[i][j].energy = entity_grid[i][j].energy - 5;
-                        pos_t nova_posh = reproduction(pos_herb);
-                        if (entity_grid[nova_posh.i][nova_posh.j].type == empty)
+                    pos_t pos;
+                    pos.i = i;
+                    pos.j = j;
+                    pos_t eat_plant = check_plants(pos);
+                    if(eat_plant.i != pos.i || eat_plant.j != pos.j){
+                        if (random_action(HERBIVORE_EAT_PROBABILITY)){
+                            entity_grid[eat_plant.i][eat_plant.j].type = herbivore; 
+                            entity_grid[eat_plant.i][eat_plant.j].energy = entity_grid[i][j].energy + 30;
+                            entity_grid[eat_plant.i][eat_plant.j].age = entity_grid[i][j].age;
+                            entity_grid[i][j].type = empty;
+                        }
+                    }
+                    else if (random_action(HERBIVORE_MOVE_PROBABILITY)){
+                        pos_t nova_pos = check_empty(pos);
+                        if (entity_grid[nova_pos.i][nova_pos.j].type == empty )
                         {
-                            entity_grid[nova_posh.i][nova_posh.j].type = herbivore;
-                            entity_grid[nova_posh.i][nova_posh.j].age = 0;
-                            entity_grid[nova_posh.i][nova_posh.j].energy = 50;
+                            entity_grid[nova_pos.i][nova_pos.j].type = herbivore;
+                            entity_grid[nova_pos.i][nova_pos.j].age = entity_grid[i][j].age;
+                            entity_grid[nova_pos.i][nova_pos.j].energy = entity_grid[i][j].energy - 5;
+                            entity_grid[i][j].type = empty;
+                        }
+                    }
+                    else if (entity_grid[i][j].energy > THRESHOLD_ENERGY_FOR_REPRODUCTION && random_action(HERBIVORE_REPRODUCTION_PROBABILITY))
+                    {
+                        if((random_action(HERBIVORE_REPRODUCTION_PROBABILITY))){
+                        entity_grid[i][j].energy = entity_grid[i][j].energy - 10;
+                        pos_t nova_pos = check_empty(pos);
+                            if (entity_grid[nova_pos.i][nova_pos.j].type == empty)
+                            {
+                                entity_grid[nova_pos.i][nova_pos.j].type = herbivore;
+                                entity_grid[nova_pos.i][nova_pos.j].age = 0;
+                                entity_grid[nova_pos.i][nova_pos.j].energy = 50;
+                            }
                         }
                     }
                 }
+                
                 if (entity_grid[i][j].type == carnivore)
                 {
                     pos_t pos;
                     pos.i = i;
                     pos.j = j;
-                    if (entity_grid[i][j].energy >= 20 && random_action(CARNIVORE_REPRODUCTION_PROBABILITY))
+                    if (entity_grid[i][j].energy > THRESHOLD_ENERGY_FOR_REPRODUCTION && random_action(CARNIVORE_REPRODUCTION_PROBABILITY))
                     {
                         entity_grid[i][j].energy = entity_grid[i][j].energy - 10;
-                        pos_t nova_pos = reproduction(pos);
+                        pos_t nova_pos = check_empty(pos);
                         if (entity_grid[nova_pos.i][nova_pos.j].type == empty)
                         {
                             entity_grid[nova_pos.i][nova_pos.j].type = carnivore;
                             entity_grid[nova_pos.i][nova_pos.j].age = 0;
                             entity_grid[nova_pos.i][nova_pos.j].energy = 100;
+                        }
+                    }
+                    else if (random_action(CARNIVORE_MOVE_PROBABILITY)){
+                        pos_t nova_pos = check_empty(pos);
+                        if (entity_grid[nova_pos.i][nova_pos.j].type == empty )
+                        {
+                            entity_grid[nova_pos.i][nova_pos.j].type = carnivore;
+                            entity_grid[nova_pos.i][nova_pos.j].age = entity_grid[i][j].age;
+                            entity_grid[nova_pos.i][nova_pos.j].energy = entity_grid[i][j].energy - 5;
+                            entity_grid[i][j].type = empty;
+                        }
+                    }
+                    pos_t eat_herb = check_herbivores(pos);
+                    if(eat_herb.i != pos.i || eat_herb.j != pos.j){
+                        if (random_action(CARNIVORE_EAT_PROBABILITY)){
+                            entity_grid[eat_herb.i][eat_herb.j].type = carnivore; 
+                            entity_grid[eat_herb.i][eat_herb.j].energy = entity_grid[i][j].energy + 30;
+                            entity_grid[eat_herb.i][eat_herb.j].age = entity_grid[i][j].age;
+                            entity_grid[i][j].type = empty;
                         }
                     }
                 }
