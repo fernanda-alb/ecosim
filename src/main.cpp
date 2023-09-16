@@ -180,7 +180,20 @@ void actions()
                 }
                 if (entity_grid[i][j].type == carnivore)
                 {
-                    printf("carnivoro\n");
+                    pos_t pos;
+                    pos.i = i;
+                    pos.j = j;
+                    if (entity_grid[i][j].energy >= 20 && random_action(CARNIVORE_REPRODUCTION_PROBABILITY))
+                    {
+                        entity_grid[i][j].energy = entity_grid[i][j].energy - 10;
+                        pos_t nova_pos = reproduction(pos);
+                        if (entity_grid[nova_pos.i][nova_pos.j].type == empty)
+                        {
+                            entity_grid[nova_pos.i][nova_pos.j].type = carnivore;
+                            entity_grid[nova_pos.i][nova_pos.j].age = 0;
+                            entity_grid[nova_pos.i][nova_pos.j].energy = 100;
+                        }
+                    }
                 }
             }
         }
