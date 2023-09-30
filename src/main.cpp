@@ -81,7 +81,7 @@ uint32_t i, j;
 std::vector<pos_t> valid_pos, occupied_pos;
 pos_t pos_aleatoria, pos, current_pos;
 
-std::vector<std::thread> plant_threads;
+std::vector<std::thread> threads;
 
 //pos_t eat_plant = check_plants(pos, occupied_pos);
 // pos_t eat_herb = check_herbivores(pos, occupied_pos);
@@ -99,19 +99,43 @@ bool check_availability(pos_t current_pos, std::vector<pos_t> occupied_pos)
 }
 
 void lock(pos_t pos){
-    entity_grid[pos.i][pos.j].m-> lock();    
-    entity_grid[pos.i+1][pos.j].m-> lock();
-    entity_grid[pos.i-1][pos.j].m-> lock();
-    entity_grid[pos.i][pos.j+1].m-> lock();
-    entity_grid[pos.i][pos.j-1].m-> lock();
+    entity_grid[pos.i][pos.j].m-> lock();  
+    if (pos.i + 1 < NUM_ROWS)
+    {
+        entity_grid[pos.i+1][pos.j].m-> lock();   
+    }
+    if (pos.i > 0)
+    {
+        entity_grid[pos.i-1][pos.j].m-> lock();
+    }
+    if (pos.j + 1 < NUM_ROWS)
+    {
+        entity_grid[pos.i][pos.j+1].m-> lock();
+    }
+    if (pos.j > 0)
+    {
+        entity_grid[pos.i][pos.j-1].m-> lock();
+    }
 }
 
 void unlock(pos_t pos){
-    entity_grid[pos.i][pos.j].m-> unlock();    
-    entity_grid[pos.i+1][pos.j].m-> unlock();
-    entity_grid[pos.i-1][pos.j].m-> unlock();
-    entity_grid[pos.i][pos.j+1].m-> unlock();
-    entity_grid[pos.i][pos.j-1].m-> unlock();
+    entity_grid[pos.i][pos.j].m-> unlock();  
+    if (pos.i + 1 < NUM_ROWS)
+    {
+        entity_grid[pos.i+1][pos.j].m-> unlock();   
+    }
+    if (pos.i > 0)
+    {
+        entity_grid[pos.i-1][pos.j].m-> unlock();
+    }
+    if (pos.j + 1 < NUM_ROWS)
+    {
+        entity_grid[pos.i][pos.j+1].m-> unlock();
+    }
+    if (pos.j > 0)
+    {
+        entity_grid[pos.i][pos.j-1].m-> unlock();
+    }  
 }
 
 pos_t check_empty(pos_t pos, std::vector<pos_t> occupied_pos)
@@ -297,9 +321,9 @@ pos_t check_empty(pos_t pos, std::vector<pos_t> occupied_pos)
 
 void simulate_plant(pos_t pos)
 {
+    lock(pos);
     if (random_action(PLANT_REPRODUCTION_PROBABILITY))
     {
-        // lock(pos);
         pos_t nova_pos = check_empty(pos, occupied_pos);
         if (entity_grid[nova_pos.i][nova_pos.j].type == empty)
         {
@@ -307,10 +331,8 @@ void simulate_plant(pos_t pos)
             entity_grid[nova_pos.i][nova_pos.j].age = 0;
             occupied_pos.push_back(nova_pos);
         }
-        // unlock(pos);
     }
-    unlock(pos);
-    //entity_grid[pos.i][pos.j].m-> unlock();    
+    unlock(pos);  
 }
 
 // void simulate_herbivore(pos_t pos)
@@ -440,6 +462,12 @@ int main()
         // Clear the entity grid
         entity_grid.clear();
         entity_grid.assign(NUM_ROWS, std::vector<entity_t>(NUM_ROWS, { empty, 0, 0, new std::mutex()}));
+        for(i=0; i< NUM_ROWS; i++){
+            for(j=0; j<NUM_ROWS; j++){
+                entity_grid[i][j].m = (new std::mutex);
+            }
+        }
+    
 
         // Create the entities
         // <YOUR CODE HERE>
@@ -543,7 +571,7 @@ int main()
                         
                         //entity_grid[pos.i][pos.j].m-> lock();   
                         lock(pos);
-                            plant_threads.emplace_back(simulate_plant, pos); 
+                        threads.emplace_back(simulate_plant, pos); 
                         // std::thread p(simulate_plant, pos);    
                         // p.join();
                     }
@@ -575,7 +603,7 @@ int main()
         }
     }
 
-    for (std::thread& thread : plant_threads)
+    for (std::thread& thread : threads)
     {
         thread.join();
     }
